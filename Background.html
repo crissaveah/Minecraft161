@@ -1,0 +1,231 @@
+<!-- 
+	References
+	https://stemkoski.github.io/Three.js/ 
+
+	Background Images
+	http://compscistu.capilanou.ca/~jmadar/threejs/textures/skybox/
+-->
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style> 
+		/*body { margin: 0; }
+		canvas { width: 100%; height: 100% }*/
+		body {
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+	<script src="js/three.min.js"></script>
+	<script src="js/Detector.js"></script>
+	<script src="js/Stats.js"></script>
+	<script src="js/OrbitControls.js"></script>
+	<script src="js/THREEx.KeyboardState.js"></script>
+	<script src="js/THREEx.FullScreen.js"></script>
+	<script src="js/THREEx.WindowResize.js"></script>
+
+	<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
+
+	<script>
+		// standard global variables
+		var container, scene, camera, renderer, controls, stats;
+		var keyboard = new THREEx.KeyboardState();
+		var clock = new THREE.Clock();
+		// custom global variables
+		var cube;
+
+		init();
+		animate();
+
+		function init() 
+		{
+			// SCENE
+			scene = new THREE.Scene();
+
+			// CAMERA
+			var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+			var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+			camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+			scene.add(camera);
+			camera.position.set(0,150,400);
+			camera.lookAt(scene.position);	
+
+			// RENDERER
+			if ( Detector.webgl )
+				renderer = new THREE.WebGLRenderer( {antialias:true} );
+			else
+				renderer = new THREE.CanvasRenderer(); 
+			renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+			container = document.getElementById( 'ThreeJS' );
+			container.appendChild( renderer.domElement );
+
+			// EVENTS
+			THREEx.WindowResize(renderer, camera);
+			THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+
+			// CONTROLS
+			controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+			// STATS
+			stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.bottom = '0px';
+			stats.domElement.style.zIndex = 100;
+			container.appendChild( stats.domElement );
+
+			// LIGHT
+			var light = new THREE.PointLight(0xffffff);
+			light.position.set(0,250,0);
+			scene.add(light);
+
+			// FLOOR
+			/*var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+			floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+			floorTexture.repeat.set( 10, 10 );
+			var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+			var floorGeometry = new THREE.PlaneGeometry(100, 100, 10, 10);
+			var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+			floor.position.y = -0.5;
+			floor.rotation.x = Math.PI / 2;
+			scene.add(floor);*/
+			
+			////////////
+			// CUSTOM //
+			////////////
+			
+			// axes
+			/*var axes = new THREE.AxisHelper(100);
+			scene.add( axes );*/
+
+			// BODY
+			var geometryBody = new THREE.BoxGeometry( 1000,1500,1250 );
+			//texturing
+			var body_material1 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/finalbody.jpg') } ); 			//uvmap
+			var body_material2 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/finalbody1.jpg') } ); 
+			var body_material3 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/finalarm1.jpg') } ); 
+			
+			var body_material = [ body_material1, body_material2, body_material3, body_material1, body_material1, body_material1];
+			var materialBody = new THREE.MeshFaceMaterial(body_material);
+			var cubeBody = new THREE.Mesh( geometryBody, materialBody ); 
+			cubeBody.position.x = 0;
+			cubeBody.position.y = 0.5;
+			cubeBody.position.z = -0.5;
+			cubeBody.rotation.y = 1;
+			scene.add( cubeBody );
+
+			// LEFT hand
+			var geometryLHand = new THREE.BoxGeometry( 500,1500,500 ); 
+			//texturing
+			var hand_material1 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/finalarm.jpg') } ); //front, back, left, right
+			var hand_material2 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/finalarm1.jpg') } ); //top-blue
+			var hand_material3 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/finalarm2.jpg') } ); //bottom-flesh
+			var hand_material = [ hand_material1, hand_material1, hand_material2, hand_material3, hand_material1, hand_material1];
+			var materialLHand = new THREE.MeshFaceMaterial(hand_material);
+			
+			var cubeLHand = new THREE.Mesh( geometryLHand, materialLHand ); 
+			scene.add( cubeLHand );
+			cubeLHand.position.x = 1000;
+			cubeLHand.position.y = 125;
+			cubeLHand.position.z = 125;
+			cubeLHand.rotation.x = -0.5;
+			cubeLHand.rotation.y = 1;
+			cubeLHand.rotation.z = 1.5;
+
+			// RIGHT hand
+			var geometryRHand = new THREE.BoxGeometry( 500,500,1500 ); 
+			//texturing
+			var hand_material4 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/finalarm3.jpg') } ); //front, back, left, right
+			var Rhand_material = [ hand_material4, hand_material4, hand_material4, hand_material3, hand_material3, hand_material2];
+			var materialRHand = new THREE.MeshFaceMaterial(Rhand_material);
+			var cubeRHand = new THREE.Mesh( geometryRHand, materialRHand ); 
+			scene.add( cubeRHand );
+			cubeRHand.position.x = -1100;
+			cubeRHand.position.y = 500;
+			cubeRHand.position.z = 125;
+			cubeRHand.rotation.y = -0.5;
+
+			// LEFT leg
+			var geometryLleg = new THREE.BoxGeometry( 500,2000,500 ); 
+			//texturing
+			var leg_material1 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/finalleg.jpg') } ); 
+			var leg_material = [ leg_material1, leg_material1, leg_material1, hand_material2, leg_material1, leg_material1];
+			var materialLleg = new THREE.MeshFaceMaterial(leg_material);
+			var cubeLleg = new THREE.Mesh( geometryLleg, materialLleg ); 
+			scene.add( cubeLleg );
+			cubeLleg.position.x = -25;
+			cubeLleg.position.y = -1200;
+			cubeLleg.position.z = 700;
+			cubeLleg.rotation.y = 1;
+			cubeLleg.rotation.z = -1;
+
+			// RIGHT leg
+			var geometryBleg = new THREE.BoxGeometry( 500,2000,500 ); 
+			//texturing
+			var materialBleg = new THREE.MeshFaceMaterial(leg_material);
+			var cubeBleg = new THREE.Mesh( geometryBleg, materialBleg ); 
+			scene.add( cubeBleg );
+			cubeBleg.position.x = 100;
+			cubeBleg.position.y = -1200;
+			cubeBleg.position.z = -800;
+			cubeBleg.rotation.y = 1;
+			cubeBleg.rotation.z = 1;
+
+			// head
+			var geometryHead = new THREE.BoxGeometry( 1000,1000,1000 ); 
+			//texturing
+			var head_material1 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/front_face.jpg') } ); 	//front
+			var head_material2 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/left_face.jpg') } ); 	//left
+			var head_material3 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/right_face.jpg') } ); 	//right
+			var head_material4 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/top_back_face.jpg') } ); 	//top, back
+			var head_material5 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/finalarm2.jpg') } ); 	//bottom
+			var head_material = [ /*back*/head_material4, /*front*/head_material1, /*top*/head_material4, /*bottom*/head_material5, /*left*/head_material2, /*right*/head_material3];
+		
+			var materialHead = new THREE.MeshFaceMaterial(head_material);
+			var cubeHead = new THREE.Mesh( geometryHead, materialHead ); 
+			scene.add( cubeHead );
+			cubeHead.position.y = 1250;
+			cubeHead.rotation.y = 1;
+
+
+			// BACKGROUND
+			var imagePrefix = "images/background/";
+			var directions  = ["west", "east", "top", "bottom", "south", "north"];
+			var imageSuffix = ".jpg";
+			var skyGeometry = new THREE.CubeGeometry( 5000, 5000, 5000 );	
+			
+			var materialArray = [];
+			for (var i = 0; i < 6; i++)
+				materialArray.push( new THREE.MeshBasicMaterial({
+					map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
+					side: THREE.BackSide
+				}));
+			var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
+			var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
+			scene.add( skyBox );
+			
+		}
+
+		function animate() 
+		{
+		    requestAnimationFrame( animate );
+			render();		
+			update();
+		}
+
+		function update()
+		{
+			controls.update();
+			stats.update();
+		}
+
+		function render() 
+		{
+			renderer.render( scene, camera );
+		}
+	</script>
+</body>
+</html> 

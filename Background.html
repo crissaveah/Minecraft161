@@ -173,7 +173,7 @@
 			cubeBleg.position.z = -800;
 			cubeBleg.rotation.y = 1;
 			cubeBleg.rotation.z = 1;
-
+		
 			// head
 			var geometryHead = new THREE.BoxGeometry( 1000,1000,1000 ); 
 			//texturing
@@ -182,18 +182,25 @@
 			var head_material3 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/right_face.jpg') } ); 	//right
 			var head_material4 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/top_back_face.jpg') } ); 	//top, back
 			var head_material5 = new THREE.MeshBasicMaterial(  { map: THREE.ImageUtils.loadTexture('images/finalarm2.jpg') } ); 	//bottom
-			var head_material = [ /*back*/head_material4, /*front*/head_material1, /*top*/head_material4, /*bottom*/head_material5, /*left*/head_material2, /*right*/head_material3];
+			var head_material = [ head_material4, head_material1, head_material4, head_material5, head_material2, head_material3];
 		
 			var materialHead = new THREE.MeshFaceMaterial(head_material);
 			var cubeHead = new THREE.Mesh( geometryHead, materialHead ); 
 			scene.add( cubeHead );
 			cubeHead.position.y = 1250;
 			cubeHead.rotation.y = 1;
-
+		
 
 			// BACKGROUND
-			var imagePrefix = "images/background/";
+		//	var imagePrefix = "images/background/dark";
+		//	var directions  = ["west", "east", "top", "bottom", "south", "north"];
+
+		//	var imagePrefix = "images/background/grass/";
+		//	var directions  = ["west", "east", "top", "bottom", "south", "north"];
+
+			var imagePrefix = "images/background/party/";
 			var directions  = ["west", "east", "top", "bottom", "south", "north"];
+
 			var imageSuffix = ".jpg";
 			var skyGeometry = new THREE.CubeGeometry( 5000, 5000, 5000 );	
 			
